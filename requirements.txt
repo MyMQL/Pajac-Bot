@@ -1,1 +1,6 @@
+discord.py[voice]==2.4.0
+yt-dlp==2023.10.7
 discord.py==2.4.0
+ffmpeg-python
+openai==0.28
+ovh
