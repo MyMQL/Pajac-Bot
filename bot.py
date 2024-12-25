@@ -9,13 +9,12 @@ from datetime import datetime
 from gambling import gambling_game
 
 voice_clients = {}
-# Wczytaj konfigurację
 with open("config.json", "r") as f:
     config = json.load(f)
 
-# Ustawienia bota
+
 intents = discord.Intents.default()
-intents.members = True  # Wymagane do zarządzania rolami
+intents.members = True  
 intents.messages = True
 intents.message_content = True
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(), intents=intents)
@@ -26,25 +25,25 @@ async def on_ready():
     await bot.change_presence(status=getattr(discord.Status, config["status"]), activity=activity)
     print(f"Bot zalogowany jako {bot.user} i jest gotowy!")
 
-# Funkcja pomocnicza do tworzenia embedów
+
 def create_embed(title: str, description: str, color: discord.Color = discord.Color.blue()):
     embed = discord.Embed(title=title, description=description, color=color)
     return embed
 
-# Funkcja do synchronizacji komend globalnych
+
 async def sync_commands():
     await bot.tree.sync()
     print("Globalne komendy zostały zsynchronizowane!")
 
-# Funkcja do synchronizacji komend dla konkretnego serwera (opcjonalnie)
+
 async def sync_guild_commands(guild_id: int):
     guild = discord.Object(id=guild_id)
     await bot.tree.sync(guild=guild)
     print(f"Komendy dla serwera {guild_id} zostały zsynchronizowane!")
 
-# Funkcja pomocnicza do odtwarzania muzyki
+
 async def play_music(voice_channel, url, guild_id):
-    # Pobieranie audio za pomocą yt-dlp
+
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
@@ -60,24 +59,24 @@ async def play_music(voice_channel, url, guild_id):
             info = ydl.extract_info(url, download=False)
             audio_url = info['url']
 
-        # Połącz z kanałem głosowym
+
         vc = await voice_channel.connect()
         voice_clients[guild_id] = vc
 
-        # Odtwarzanie audio
+
         vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source=audio_url))
 
-        # Czekanie na zakończenie
-        while vc.is_playing() or vc.is_paused():  # Upewnij się, że połączenie jest aktywne
+
+        while vc.is_playing() or vc.is_paused():
             await asyncio.sleep(1)
     except Exception as e:
         print(f"Error playing music: {e}")
     finally:
-        if guild_id in voice_clients and not vc.is_paused():  # Rozłącz tylko, jeśli nie wstrzymano
+        if guild_id in voice_clients and not vc.is_paused(): 
             await vc.disconnect()
             del voice_clients[guild_id]
 
-# Komenda: muzyka
+
 @bot.tree.command(name="muzyka", description="Odtwarza muzykę z podanego linku.")
 @app_commands.describe(url="Link do muzyki (YouTube lub Spotify).")
 async def muzyka(interaction: discord.Interaction, url: str):
@@ -96,7 +95,7 @@ async def muzyka(interaction: discord.Interaction, url: str):
         embed = create_embed("❌ Błąd!", f"Nie udało się odtworzyć muzyki: {e}", discord.Color.red())
         await interaction.followup.send(embed=embed)
 
-# Komenda: reset
+
 @bot.tree.command(name="reset", description="Resetuje i synchronizuje komendy slash.")
 async def reset(interaction: discord.Interaction):
     try:
@@ -107,14 +106,14 @@ async def reset(interaction: discord.Interaction):
         embed = create_embed("❌ Błąd Resetu", f"Nie udało się zresetować komend: {e}", discord.Color.red())
         await interaction.response.send_message(embed=embed)
 
-# Komenda: ping
+
 @bot.tree.command(name="ping", description="Sprawdź ping bota.")
 async def ping(interaction: discord.Interaction):
-    latency = round(bot.latency * 1000)  # Konwersja na ms
+    latency = round(bot.latency * 1000)  
     embed = create_embed("🏓 Pong!", f"Ping bota: {latency}ms")
     await interaction.response.send_message(embed=embed)
 
-# Komenda: obywatel
+
 @bot.tree.command(name="obywatel", description="Nadaj użytkownikowi rolę obywatela.")
 @app_commands.describe(user="Użytkownik, któremu chcesz nadać rolę.")
 async def obywatel(interaction: discord.Interaction, user: discord.Member):
@@ -134,7 +133,7 @@ async def obywatel(interaction: discord.Interaction, user: discord.Member):
         embed = create_embed("Błąd!", f"Nie udało się nadać roli: {e}", discord.Color.red())
         await interaction.response.send_message(embed=embed)
 
-# Komenda: wok
+
 @bot.tree.command(name="wok", description="Pinguje określonego użytkownika.")
 async def wok(interaction: discord.Interaction):
     user_id = int(config["users"]["wok_user_id"])
@@ -146,7 +145,7 @@ async def wok(interaction: discord.Interaction):
     embed = create_embed("Ping!", f"{user.mention}, zostałeś pingnięty!")
     await interaction.response.send_message(embed=embed)
 
-# Komenda: obzarty
+
 @bot.tree.command(name="obzarty", description="Pinguje określonego użytkownika.")
 async def obzarty(interaction: discord.Interaction):
     user_id = int(config["users"]["obzarty_user_id"])
@@ -158,14 +157,14 @@ async def obzarty(interaction: discord.Interaction):
     embed = create_embed("Ping!", f"{user.mention}, zostałeś pingnięty!")
     await interaction.response.send_message(embed=embed)
 
-# Komenda: mow
+
 @bot.tree.command(name="mow", description="Powtarza w embedzie to, co napiszesz.")
 @app_commands.describe(message="Wiadomość, którą bot ma powtórzyć.")
 async def mow(interaction: discord.Interaction, message: str):
     embed = create_embed("📢 Wiadomość od bota", message)
     await interaction.response.send_message(embed=embed)
 
-# Komenda: kod
+
 @bot.tree.command(name="kod", description="Wyświetla link do repozytorium GitHuba bota.")
 async def kod(interaction: discord.Interaction):
     embed = discord.Embed(
@@ -176,7 +175,7 @@ async def kod(interaction: discord.Interaction):
     embed.set_footer(text="Komenda stworzona dla deweloperów, proszę mi tam kurwa nie otwierać błędów")
     await interaction.response.send_message(embed=embed)
 
-# Globalna zmienna do przechowywania połączeń głosowych
+
 
 @bot.tree.command(name="pauza", description="Zatrzymuje aktualnie odtwarzaną muzykę.")
 async def pauza(interaction: discord.Interaction):
@@ -193,7 +192,7 @@ async def pauza(interaction: discord.Interaction):
 @bot.tree.command(name="dalej", description="Wznawia odtwarzanie zatrzymanej muzyki.")
 async def dalej(interaction: discord.Interaction):
     guild_id = interaction.guild.id
-    vc = voice_clients.get(guild_id)  # Pobierz połączenie głosowe dla serwera
+    vc = voice_clients.get(guild_id)  
     if vc and vc.is_paused():
         vc.resume()
         embed = create_embed("▶️ Wznowienie", "Muzyka została wznowiona.")
@@ -207,7 +206,7 @@ async def dalej(interaction: discord.Interaction):
 
 @bot.tree.command(name="sms", description="Wyślij domyślny SMS.")
 async def sms(interaction: discord.Interaction):
-    # Sprawdzenie uprawnień administratora
+
     if not interaction.user.guild_permissions.administrator:
         embed = create_embed(
             "❌ Brak uprawnień!",
@@ -218,10 +217,10 @@ async def sms(interaction: discord.Interaction):
         return
 
     try:
-        # Pobierz embed z funkcji send_sms
+
         embed = send_sms()
 
-        # Wyślij embed jako odpowiedź
+
         await interaction.response.send_message(embed=embed)
     except Exception as e:
         embed = create_embed(
@@ -240,13 +239,12 @@ async def czystka(interaction: discord.Interaction, ilosc: int):
         return
 
     try:
-        # Wyślij szybką odpowiedź na interakcję
+
         await interaction.response.send_message(f"Rozpoczynam usuwanie {ilosc} wiadomości...", ephemeral=True)
 
-        # Usuń wiadomości
+
         deleted = await interaction.channel.purge(limit=ilosc)
 
-        # Wyślij potwierdzenie w osobnym embedzie
         embed = create_embed(
             "🧹 Czystka!",
             f"Pomyślnie usunięto {len(deleted)} wiadomości.",
@@ -262,7 +260,7 @@ async def czystka(interaction: discord.Interaction, ilosc: int):
         await interaction.followup.send(embed=embed, ephemeral=True)
 
 
-# Automatyczne usuwanie wiadomości
+
 @bot.event
 async def on_message(message):
     auto_delete_channels = config.get("auto_delete_channels", [])
@@ -278,7 +276,7 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-# Komenda: ustaw_auto_usuwanie
+
 @bot.tree.command(name="ustaw_auto_usuwanie", description="Dodaje kanał do listy automatycznego usuwania wiadomości.")
 async def ustaw_auto_usuwanie(interaction: discord.Interaction):
     if not interaction.user.guild_permissions.administrator:
@@ -299,7 +297,7 @@ async def ustaw_auto_usuwanie(interaction: discord.Interaction):
     except Exception as e:
         await interaction.response.send_message(f"Wystąpił błąd: {e}", ephemeral=True)
 
-# Komenda: status
+
 @bot.tree.command(name="status", description="Wyświetla status ZSTTP.")
 async def status(interaction: discord.Interaction):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -318,7 +316,7 @@ async def gambling(interaction: discord.Interaction, *, options: str):
     options_list = [opt.strip() for opt in options.split(",") if opt.strip()]
     await gambling_game(interaction, options_list)
 
-# Komenda: ochrona
+
 @bot.tree.command(name="ochrona", description="Wyświetla listę chronionych kanałów.")
 async def ochrona(interaction: discord.Interaction):
     auto_delete_channels = config.get("auto_delete_channels", [])
@@ -341,10 +339,10 @@ async def ochrona(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed)
 
-# Synchronizacja komend slash przy starcie
+
 @bot.event
 async def on_connect():
     await sync_commands()
 
-# Uruchom bota
+
 bot.run(config["token"])
