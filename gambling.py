@@ -37,13 +37,13 @@ async def gambling_game(interaction: discord.Interaction, options: list):
     await interaction.response.send_message(embed=embed, ephemeral=False)
     message = await interaction.original_response()
 
-    # Symulacja kręcenia się koła fortuny (dłuższy czas, szybsze zmiany)
-    for _ in range(10):  # Więcej iteracji dla dłuższego efektu
+
+    for _ in range(10):  
         embed.description = f"Koło się kręci: {random.choice(options)}"
         await message.edit(embed=embed)
-        await asyncio.sleep(0.5)  # Krótszy czas pomiędzy zmianami
+        await asyncio.sleep(0.5)  
 
-    # Losowanie wyniku
+
     result = random.choice(options)
     result_embed = create_embed(
         "🎉 Wynik gry!",
