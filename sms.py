@@ -2,16 +2,16 @@ import ovh
 import json
 import discord
 
-# Wczytaj konfigurację z pliku config.json
+
 with open("config.json", "r") as f:
     config = json.load(f)
 
-# Konfiguracja klienta OVH
+
 client = ovh.Client(
-    endpoint='ovh-eu',  # Endpoint OVH API (np. 'ovh-eu' dla Europy)
-    application_key=config["ovh_app_key"],  # Klucz aplikacji z config.json
-    application_secret=config["ovh_app_secret"],  # Sekret aplikacji z config.json
-    consumer_key=config["ovh_consumer_key"]  # Klucz użytkownika z config.json
+    endpoint='ovh-eu', 
+    application_key=config["ovh_app_key"],  
+    application_secret=config["ovh_app_secret"], 
+    consumer_key=config["ovh_consumer_key"]  
 )
 
 def create_embed(title, description, success=True):
@@ -35,8 +35,8 @@ def send_sms(message=None):
     :return: Wynik w formacie embeda Discord
     """
     service_name = config["ovh_sms_service"]
-    sender = "MQGRUZ.PL"  # Możesz zmienić na dowolną nazwę
-    receivers = [config["sms_recipient"]]  # Odbiorca z config.json
+    sender = "MQGRUZ.PL"  
+    receivers = [config["sms_recipient"]]  
     message = message or config["default_sms_message"]
 
     try:
@@ -45,9 +45,9 @@ def send_sms(message=None):
             sender=sender,
             receivers=receivers,
             message=message,
-            noStopClause=True,  # Opcja wyłączenia klauzuli STOP (wymaga wiadomości nie-reklamowej)
+            noStopClause=True,  
         )
-        # Sprawdzenie wyników
+       
         if result.get("validReceivers"):
             return create_embed("✅ Sukces!", "SMS wysłany pomyślnie do odbiorcy.", success=True)
         else:
@@ -61,8 +61,8 @@ def send_sms(message=None):
     except Exception as e:
         return create_embed("❌ Nieoczekiwany błąd!", f"Nieoczekiwany błąd: {str(e)}", success=False)
 
-# Przykład użycia w bota
+
 if __name__ == "__main__":
     response_embed = send_sms()
-    # Tutaj należy wysłać embeda przez bota Discord (np. message.channel.send(embed=response_embed))
-    print(response_embed.to_dict())  # Wypisz dla testów strukturę embeda
+
+    print(response_embed.to_dict()) 
